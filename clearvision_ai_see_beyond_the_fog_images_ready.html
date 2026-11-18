@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearVision AI — See Beyond the Fog</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              950: '#040814',
+              900: '#070E20',
+              850: '#0B152E',
+              800: '#0F1C3A',
+              700: '#172952',
+            },
+            cyan: {
+              400: '#22D3EE',
+              500: '#06B6D4',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      background-color: #040814;
+      color: #E2E8F0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grid background */
+    .bg-tech-grid {
+      background-image:
+        linear-gradient(to right, rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* Ambient fog drift animation */
+    @keyframes fogDrift {
+      0% { transform: translateX(-4%) translateY(0px); opacity: 0.45; }
+      50% { transform: translateX(4%) translateY(-8px); opacity: 0.65; }
+      100% { transform: translateX(-4%) translateY(0px); opacity: 0.45; }
+    }
+
+    .fog-layer {
+      animation: fogDrift 16s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.35); }
+      50% { box-shadow: 0 0 24px 4px rgba(34, 211, 238, 0.25); }
+    }
+
+    .pulse-cyan {
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    /* Reveal on scroll */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Glassmorphism panels */
+    .glass-panel {
+      background: linear-gradient(145deg, rgba(15, 28, 58, 0.72), rgba(7, 14, 32, 0.88));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.14);
+    }
+
+    .glass-panel-active {
+      background: linear-gradient(145deg, rgba(14, 116, 144, 0.22), rgba(15, 28, 58, 0.9));
+      border: 1px solid rgba(34, 211, 238, 0.55);
+      box-shadow: 0 10px 35px -10px rgba(6, 182, 212, 0.28);
+    }
+
+    /* Comparison slider */
+    .compare-container {
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .compare-before {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .compare-divider {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, rgba(34, 211, 238, 0.2), #22D3EE, rgba(34, 211, 238, 0.2));
+      box-shadow: 0 0 18px rgba(34, 211, 238, 0.85);
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .compare-handle {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 9999px;
+      background: rgba(7, 14, 32, 0.9);
+      border: 2px solid #22D3EE;
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #22D3EE;
+      cursor: ew-resize;
+      z-index: 30;
+    }
+
+    /* Spectrum filter simulations (illustrative only) */
+    .filter-rgb {
+      filter: contrast(1.0) brightness(0.95) saturate(1.0);
+    }
+    .filter-thermal {
+      filter: grayscale(100%) contrast(1.55) brightness(1.05) sepia(100%) hue-rotate(155deg) saturate(2.8);
+    }
+    .filter-nir {
+      filter: grayscale(100%) contrast(1.35) brightness(1.12);
+    }
+    .filter-fusion {
+      filter: contrast(1.18) brightness(1.08) saturate(1.15);
+    }
+
+    /* Custom range slider */
+    input[type="range"].fog-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(30, 41, 59, 0.9);
+      height: 6px;
+      border-radius: 9999px;
+      outline: none;
+    }
+    input[type="range"].fog-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #22D3EE;
+      border: 2px solid #040814;
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.7);
+      cursor: pointer;
+    }
+    input[type="range"].fog-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #22D3EE;
+      border: 2px solid #040814;
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.7);
+      cursor: pointer;
+    }
+
+    /* Huawei-inspired red accent utilities */
+    .glass-panel-huawei {
+      background: linear-gradient(145deg, rgba(207, 10, 44, 0.12), rgba(15, 28, 58, 0.88));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(244, 63, 94, 0.28);
+    }
+
+    .arch-node-active {
+      background: linear-gradient(145deg, rgba(207, 10, 44, 0.2), rgba(15, 28, 58, 0.95));
+      border-color: rgba(244, 63, 94, 0.75) !important;
+      box-shadow: 0 0 26px -6px rgba(244, 63, 94, 0.45);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+  <!--
+    LOCAL IMAGE FILES
+    Keep an "images" folder beside this HTML file.
+    Required filenames:
+      images/clear-road.jpg
+      images/foggy-road.jpg
+      images/enhanced-road.jpg
+      images/adas-car.jpg
+    If you rename an image, update its matching path wherever it appears below.
+  -->
+
+
+  <!-- Top Scroll Progress Bar -->
+  <div class="fixed top-0 left-0 right-0 h-0.5 z-50 bg-navy-900/60">
+    <div id="scroll-progress" class="h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-cyan-300 transition-all duration-150" style="width: 0%"></div>
+  </div>
+
+  <!-- Sticky Navigation -->
+  <header id="navbar" class="fixed top-0 left-0 right-0 z-40 transition-all duration-300 bg-navy-950/75 backdrop-blur-xl border-b border-cyan-500/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand -->
+        <a href="#home" class="flex items-center gap-2.5 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400/20 to-blue-600/30 border border-cyan-400/40 flex items-center justify-center group-hover:border-cyan-400 transition-colors">
+            <svg class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 3v1m0 16v1M4.2 5.2l.7.7m14.2 12.2.7.7M3 12h1m16 0h1" opacity="0.55"/>
+            </svg>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-base font-bold tracking-tight text-white leading-none">ClearVision <span class="text-cyan-400">AI</span></span>
+            <span class="text-[10px] uppercase tracking-widest text-slate-400 mt-0.5">Concept Prototype</span>
+          </div>
+        </a>
+
+        <!-- Desktop Nav Links -->
+        <nav class="hidden md:flex items-center gap-1" aria-label="Primary Navigation">
+          <a href="#home" data-section="home" class="nav-link px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Home</a>
+          <a href="#problem" data-section="problem" class="nav-link px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors">The Problem</a>
+          <a href="#solution" data-section="solution" class="nav-link px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Our Solution</a>
+          <a href="#how-it-works" data-section="how-it-works" class="nav-link px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors">How It Works</a>
+          <a href="#future-vision" data-section="future-vision" class="nav-link px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Future Vision</a>
+          <a href="#huawei-integration" data-section="huawei-integration" class="nav-link px-3.5 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Huawei Tech</a>
+        </nav>
+
+        <!-- Concept Tour / Mobile Menu Button -->
+        <div class="flex items-center gap-2">
+          <a href="#solution" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 hover:bg-cyan-500/25 transition-colors">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+            Interactive Concept
+          </a>
+          <button id="mobile-menu-btn" type="button" class="md:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors" aria-label="Toggle navigation menu" aria-expanded="false">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Dropdown -->
+      <div id="mobile-menu" class="hidden md:hidden pb-4 pt-2 border-t border-cyan-500/10 space-y-1">
+        <a href="#home" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5">1. Home</a>
+        <a href="#problem" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5">2. The Problem</a>
+        <a href="#solution" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5">3. Our Solution</a>
+        <a href="#how-it-works" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5">4. How It Works</a>
+        <a href="#future-vision" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5">5. Future Vision</a>
+        <a href="#huawei-integration" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/5">6. Huawei Tech Integration</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- =================================================================== -->
+    <!-- SECTION 1: HOME                                                     -->
+    <!-- =================================================================== -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+      <!-- Cinematic Foggy Road Background -->
+      <div class="absolute inset-0 z-0">
+        <img
+          src="images/adas-car.jpg"
+          alt="Cinematic foggy highway at dusk"
+          class="w-full h-full object-cover object-center scale-105"
+        />
+        <!-- Multi-stop dark navy atmospheric gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-b from-navy-950/85 via-navy-950/60 to-navy-950"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-navy-950/85 via-navy-950/40 to-navy-950/80"></div>
+        <!-- Subtle animated fog mist layer -->
+        <div class="fog-layer absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-navy-950 via-cyan-950/15 to-transparent pointer-events-none"></div>
+      </div>
+
+      <!-- Hero Content -->
+      <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-navy-900/80 border border-cyan-400/30 text-cyan-300 text-xs font-medium tracking-wide uppercase mb-8 backdrop-blur-md">
+          <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+          AI-Powered Road Visibility Concept
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6">
+          ClearVision <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500">AI</span>
+        </h1>
+
+        <p class="text-xl sm:text-3xl font-light text-cyan-100 tracking-wide mb-6">
+          “See Beyond the Fog”
+        </p>
+
+        <p class="max-w-2xl mx-auto text-base sm:text-lg text-slate-300 leading-relaxed mb-10">
+          An AI-powered road visibility enhancement concept designed to help drivers and smart vehicles perceive lanes, vehicles, and obstacles clearly in dense fog.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="#problem" class="pulse-cyan inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm sm:text-base hover:from-cyan-400 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/20">
+            Explore the Concept
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </a>
+          <a href="#solution" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-navy-900/75 border border-slate-600/50 text-slate-200 font-medium text-sm sm:text-base hover:border-cyan-400/50 hover:text-white transition-all backdrop-blur-md">
+            Try Interactive Preview
+          </a>
+        </div>
+
+        <!-- 5-Step Journey Pills -->
+        <div class="mt-16 grid grid-cols-2 sm:grid-cols-5 gap-2.5 max-w-3xl mx-auto text-xs">
+          <a href="#home" class="px-3 py-2 rounded-lg bg-cyan-500/15 border border-cyan-400/40 text-cyan-200 font-medium">01. Overview</a>
+          <a href="#problem" class="px-3 py-2 rounded-lg bg-navy-900/65 border border-white/10 text-slate-300 hover:border-cyan-400/40 transition-colors">02. The Problem</a>
+          <a href="#solution" class="px-3 py-2 rounded-lg bg-navy-900/65 border border-white/10 text-slate-300 hover:border-cyan-400/40 transition-colors">03. Our Solution</a>
+          <a href="#how-it-works" class="px-3 py-2 rounded-lg bg-navy-900/65 border border-white/10 text-slate-300 hover:border-cyan-400/40 transition-colors">04. How It Works</a>
+          <a href="#future-vision" class="col-span-2 sm:col-span-1 px-3 py-2 rounded-lg bg-navy-900/65 border border-white/10 text-slate-300 hover:border-cyan-400/40 transition-colors">05. Future Vision</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECTION 2: THE PROBLEM                                              -->
+    <!-- =================================================================== -->
+    <section id="problem" class="relative py-24 sm:py-32 bg-navy-950 bg-tech-grid border-t border-cyan-500/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="reveal max-w-3xl mb-14">
+          <span class="text-xs font-semibold uppercase tracking-widest text-cyan-400">02 — The Problem</span>
+          <h2 class="mt-2 text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            Why Fog Makes Driving Dangerous
+          </h2>
+          <p class="mt-4 text-slate-300 text-base sm:text-lg leading-relaxed">
+            Dense fog scatters light, washes out road contrast, and hides hazards until they are dangerously close—putting both human drivers and standard camera systems at risk.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <!-- Interactive Fog Density Simulator (Illustrative) -->
+          <div class="reveal lg:col-span-7 glass-panel rounded-2xl p-4 sm:p-6">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 class="text-sm font-semibold text-white">Interactive Fog Visibility Simulator</h3>
+                <p class="text-xs text-slate-400">Adjust fog density to see how visual cues disappear on the road</p>
+              </div>
+              <span id="fog-level-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-400/30">
+                Moderate Fog
+              </span>
+            </div>
+
+            <!-- Simulated Road Frame -->
+            <div class="relative rounded-xl overflow-hidden aspect-video bg-navy-900 border border-slate-700/60">
+              <!-- Clear base image -->
+              <img
+                src="images/foggy-road.jpg"
+                alt="Road view in clear twilight"
+                class="w-full h-full object-cover"
+              />
+              <!-- Foggy overlay image controlled by slider -->
+              <img
+                id="problem-fog-overlay"
+                src="images/foggy-road.jpg"
+                alt="Road view in fog"
+                class="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
+                style="opacity: 0.7;"
+              />
+              <!-- Additional white-gray atmospheric scattering veil for dense fog -->
+              <div
+                id="problem-haze-veil"
+                class="absolute inset-0 pointer-events-none transition-opacity duration-200"
+                style="background: radial-gradient(circle at 50% 45%, rgba(186, 200, 218, 0.35), rgba(148, 163, 184, 0.65)); opacity: 0.25;"
+              ></div>
+
+              <!-- Illustrative Label -->
+              <div class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-navy-950/80 backdrop-blur-sm border border-white/10 text-[11px] text-slate-300">
+                Illustrative Road Scenario
+              </div>
+            </div>
+
+            <!-- Slider Controls -->
+            <div class="mt-5">
+              <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+                <span>Clear / Light Mist</span>
+                <span>Moderate Fog</span>
+                <span>Dense Fog</span>
+              </div>
+              <input
+                id="fog-density-slider"
+                type="range"
+                min="0"
+                max="100"
+                value="60"
+                class="fog-slider w-full"
+                aria-label="Fog density level"
+              />
+              <p id="fog-impact-caption" class="mt-3 text-sm text-cyan-200/90">
+                Moderate fog blurs lane markings and softens contrast, making distance harder to judge.
+              </p>
+            </div>
+          </div>
+
+          <!-- 3 Concise Risk Cards -->
+          <div class="reveal lg:col-span-5 space-y-4">
+            <div class="glass-panel rounded-2xl p-5 hover:border-cyan-400/40 transition-colors">
+              <div class="flex items-start gap-4">
+                <div class="w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-400/30 flex items-center justify-center shrink-0 text-blue-300">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M3 12h2m14 0h2M5.6 18.4 7 17m10-10 1.4-1.4" />
+                    <circle cx="12" cy="12" r="4" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-semibold text-white">Headlight Glare &amp; Scattering</h3>
+                  <p class="mt-1 text-sm text-slate-300 leading-relaxed">
+                    Tiny water droplets bounce headlight beams back toward the driver, creating a bright veil instead of illuminating the road ahead.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 hover:border-cyan-400/40 transition-colors">
+              <div class="flex items-start gap-4">
+                <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center shrink-0 text-cyan-300">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 20L9 4m11 16L15 4M12 7v2m0 4v2m0 4v1" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-semibold text-white">Hidden Lanes &amp; Vehicles</h3>
+                  <p class="mt-1 text-sm text-slate-300 leading-relaxed">
+                    Lane boundaries, road edges, and unlit obstacles fade into gray mist, leaving drivers with very little reaction time.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 hover:border-cyan-400/40 transition-colors">
+              <div class="flex items-start gap-4">
+                <div class="w-11 h-11 rounded-xl bg-indigo-500/15 border border-indigo-400/30 flex items-center justify-center shrink-0 text-indigo-300">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.3 3.9L1.8 18.2A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.8L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-semibold text-white">Standard Camera Blindness</h3>
+                  <p class="mt-1 text-sm text-slate-300 leading-relaxed">
+                    Conventional visible-light dashcams and driver-assist sensors lose contrast in fog just like the human eye.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECTION 3: OUR SOLUTION                                             -->
+    <!-- =================================================================== -->
+    <section id="solution" class="relative py-24 sm:py-32 bg-navy-900 border-t border-cyan-500/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="reveal text-center max-w-3xl mx-auto mb-14">
+          <span class="text-xs font-semibold uppercase tracking-widest text-cyan-400">03 — Our Solution</span>
+          <h2 class="mt-2 text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            From Foggy Input to Clear Road Awareness
+          </h2>
+          <p class="mt-4 text-slate-300 text-base sm:text-lg leading-relaxed">
+            ClearVision AI combines multi-spectrum camera feeds with deep-learning dehazing to reconstruct a crisp, high-contrast view of the road.
+          </p>
+        </div>
+
+        <!-- Interactive 4-Stage Pipeline Flow -->
+        <div class="reveal mb-12">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
+            <button type="button" data-step="0" class="pipeline-step glass-panel-active text-left rounded-2xl p-5 transition-all cursor-pointer">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Step 01</span>
+                <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-white">Camera Input</h3>
+              <p class="mt-1.5 text-xs sm:text-sm text-slate-300">Captures road scenes across visible, thermal, and near-infrared light.</p>
+            </button>
+
+            <button type="button" data-step="1" class="pipeline-step glass-panel text-left rounded-2xl p-5 transition-all cursor-pointer hover:border-cyan-400/40">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Step 02</span>
+                <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4M4.9 4.9l2.8 2.8m8.6 8.6 2.8 2.8M2 12h4m12 0h4M4.9 19.1l2.8-2.8m8.6-8.6 2.8-2.8" />
+                  </svg>
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-white">AI Dehazing</h3>
+              <p class="mt-1.5 text-xs sm:text-sm text-slate-300">Separates atmospheric fog scatter from true road geometry and textures.</p>
+            </button>
+
+            <button type="button" data-step="2" class="pipeline-step glass-panel text-left rounded-2xl p-5 transition-all cursor-pointer hover:border-cyan-400/40">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Step 03</span>
+                <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-white">Enhanced Visibility</h3>
+              <p class="mt-1.5 text-xs sm:text-sm text-slate-300">Produces a clear, high-contrast road view with sharp lanes and vehicles.</p>
+            </button>
+
+            <button type="button" data-step="3" class="pipeline-step glass-panel text-left rounded-2xl p-5 transition-all cursor-pointer hover:border-cyan-400/40">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Step 04</span>
+                <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4" />
+                  </svg>
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-white">Safety Support</h3>
+              <p class="mt-1.5 text-xs sm:text-sm text-slate-300">Delivers clearer visual cues for the driver and vehicle assistance systems.</p>
+            </button>
+          </div>
+
+          <!-- Active Pipeline Detail Bar -->
+          <div class="mt-4 glass-panel rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span id="pipeline-detail-badge" class="px-2.5 py-1 rounded-md bg-cyan-500/20 text-cyan-300 text-xs font-semibold shrink-0">Step 01</span>
+              <p id="pipeline-detail-text" class="text-sm text-slate-200">
+                Multi-spectrum vehicle cameras continuously observe the foggy road environment, capturing both visible and infrared signals.
+              </p>
+            </div>
+            <button id="pipeline-next-btn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 text-xs font-medium text-cyan-300 transition-colors shrink-0 self-start sm:self-auto">
+              Next Stage
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Before / After Comparison Slider -->
+        <div class="reveal glass-panel rounded-2xl p-4 sm:p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="text-base font-semibold text-white">Interactive Concept Preview: Before vs. After AI Dehazing</h3>
+              <p class="text-xs text-slate-400">Drag the handle left or right to compare foggy input with the conceptual enhanced view</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" data-split="15" class="split-preset px-2.5 py-1 rounded-md text-xs font-medium bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-200 border border-white/10 transition-colors">Mostly Clear</button>
+              <button type="button" data-split="50" class="split-preset px-2.5 py-1 rounded-md text-xs font-medium bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 transition-colors">50 / 50</button>
+              <button type="button" data-split="85" class="split-preset px-2.5 py-1 rounded-md text-xs font-medium bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-200 border border-white/10 transition-colors">Mostly Foggy</button>
+            </div>
+          </div>
+
+          <div id="compare-box" class="compare-container rounded-xl aspect-video max-h-[520px] w-full border border-slate-700/70">
+            <!-- After (Clear / Enhanced) Base Layer -->
+            <img
+              src="images/enhanced-road.jpg"
+              alt="Illustrative AI-enhanced clear road visibility"
+              class="w-full h-full object-cover pointer-events-none"
+            />
+            <div class="absolute top-3 right-3 px-3 py-1 rounded-full bg-cyan-500/20 backdrop-blur-md border border-cyan-400/40 text-xs font-semibold text-cyan-200 pointer-events-none">
+              Enhanced Concept View
+            </div>
+
+            <!-- Before (Foggy Input) Clipped Layer -->
+            <div id="compare-before-layer" class="compare-before" style="clip-path: inset(0 50% 0 0);">
+              <img
+                src="images/foggy-road.jpg"
+                alt="Foggy camera input"
+                class="w-full h-full object-cover pointer-events-none"
+              />
+              <div class="absolute top-3 left-3 px-3 py-1 rounded-full bg-navy-950/80 backdrop-blur-md border border-white/15 text-xs font-semibold text-slate-200 pointer-events-none">
+                Foggy Camera Input
+              </div>
+            </div>
+
+            <!-- Divider & Handle -->
+            <div id="compare-divider" class="compare-divider" style="left: 50%;"></div>
+            <div id="compare-handle" class="compare-handle" style="left: 50%;" role="slider" aria-label="Before and after comparison slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" tabindex="0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l-3 3 3 3m8-6l3 3-3 3" />
+              </svg>
+            </div>
+          </div>
+
+          <p class="mt-3 text-[11px] text-slate-400 text-center">
+            Note: Illustrative concept visualization only — not live AI inference or experimental output.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECTION 4: HOW IT WORKS                                             -->
+    <!-- =================================================================== -->
+    <section id="how-it-works" class="relative py-24 sm:py-32 bg-navy-950 bg-tech-grid border-t border-cyan-500/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="reveal max-w-3xl mb-14">
+          <span class="text-xs font-semibold uppercase tracking-widest text-cyan-400">04 — How It Works</span>
+          <h2 class="mt-2 text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            Multi-Spectrum Sensing &amp; AI Dehazing
+          </h2>
+          <p class="mt-4 text-slate-300 text-base sm:text-lg leading-relaxed">
+            No single camera sees everything in thick fog. ClearVision AI is designed around three complementary camera wavelengths fused together by an AI dehazing model.
+          </p>
+        </div>
+
+        <!-- Interactive Spectrum Selector -->
+        <div class="reveal grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <!-- Left: Camera Mode Buttons -->
+          <div class="lg:col-span-5 space-y-3">
+            <button type="button" data-sensor="rgb" class="sensor-btn glass-panel-active w-full text-left rounded-2xl p-5 transition-all cursor-pointer">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Visible Spectrum</span>
+                <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[11px] font-medium">RGB Camera</span>
+              </div>
+              <h3 class="mt-1.5 text-lg font-bold text-white">RGB Camera (Color &amp; Detail)</h3>
+              <p class="mt-1 text-sm text-slate-300">
+                Captures natural colors, traffic signs, and lane markings—essential for understanding road context when fog is light to moderate.
+              </p>
+            </button>
+
+            <button type="button" data-sensor="thermal" class="sensor-btn glass-panel w-full text-left rounded-2xl p-5 transition-all cursor-pointer hover:border-cyan-400/40">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Long-Wave Infrared</span>
+                <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[11px] font-medium">Thermal Camera</span>
+              </div>
+              <h3 class="mt-1.5 text-lg font-bold text-white">Thermal Camera (Heat Signatures)</h3>
+              <p class="mt-1 text-sm text-slate-300">
+                Detects heat emitted by vehicles, pedestrians, and animals, seeing right through dense fog and darkness without relying on headlights.
+              </p>
+            </button>
+
+            <button type="button" data-sensor="nir" class="sensor-btn glass-panel w-full text-left rounded-2xl p-5 transition-all cursor-pointer hover:border-cyan-400/40">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Near-Infrared</span>
+                <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[11px] font-medium">NIR Camera</span>
+              </div>
+              <h3 class="mt-1.5 text-lg font-bold text-white">NIR Camera (Haze Penetration)</h3>
+              <p class="mt-1 text-sm text-slate-300">
+                Uses longer wavelengths than visible light to scatter less in mist, preserving sharper road edges and distant structure.
+              </p>
+            </button>
+
+            <button type="button" data-sensor="fusion" class="sensor-btn glass-panel w-full text-left rounded-2xl p-5 transition-all cursor-pointer hover:border-cyan-400/40">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Neural Reconstruction</span>
+                <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[11px] font-medium">AI Dehazing</span>
+              </div>
+              <h3 class="mt-1.5 text-lg font-bold text-white">AI Dehazing &amp; Sensor Fusion</h3>
+              <p class="mt-1 text-sm text-slate-300">
+                Combines RGB color, NIR structure, and Thermal object cues to remove fog haze and restore a clean, unified road view.
+              </p>
+            </button>
+          </div>
+
+          <!-- Right: Interactive Technical Illustration & Simulated View -->
+          <div class="lg:col-span-7 glass-panel rounded-2xl p-5 sm:p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div>
+                <h3 id="sensor-panel-title" class="text-base font-bold text-white">RGB Camera — Visible Light View</h3>
+                <p id="sensor-panel-subtitle" class="text-xs text-slate-400">Illustrative representation of how this sensor perceives a foggy road</p>
+              </div>
+              <span id="sensor-wavelength-tag" class="px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-xs font-semibold text-cyan-300">
+                Visible Light
+              </span>
+            </div>
+
+            <!-- Simulated Sensor Viewport -->
+            <div class="relative rounded-xl overflow-hidden aspect-video bg-navy-900 border border-slate-700/70 mb-6">
+              <img
+                id="sensor-preview-img"
+                src="images/clear-road.jpg"
+                alt="Sensor perception concept"
+                class="w-full h-full object-cover transition-all duration-500 filter-rgb"
+              />
+              <!-- Optional thermal/AI overlay badge -->
+              <div id="sensor-hud-overlay" class="absolute inset-0 pointer-events-none transition-opacity duration-300 opacity-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-cyan-950/40 via-transparent to-transparent"></div>
+              </div>
+              <div class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-navy-950/85 border border-white/10 text-[11px] text-slate-300">
+                Illustrative Sensor Concept
+              </div>
+            </div>
+
+            <!-- Technical SVG Diagram: AI Dehazing Architecture -->
+            <div class="rounded-xl bg-navy-950/80 border border-cyan-500/15 p-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Conceptual AI Dehazing Flow</div>
+              <svg viewBox="0 0 720 150" class="w-full h-auto" role="img" aria-label="Diagram showing RGB, Thermal, and NIR inputs entering AI Dehazing Fusion to output Enhanced Road View">
+                <!-- Connecting lines -->
+                <path d="M150 28 C210 28, 220 75, 280 75" stroke="#38BDF8" stroke-width="2" fill="none" stroke-opacity="0.55" />
+                <path d="M150 75 L280 75" stroke="#F59E0B" stroke-width="2" fill="none" stroke-opacity="0.6" />
+                <path d="M150 122 C210 122, 220 75, 280 75" stroke="#A855F7" stroke-width="2" fill="none" stroke-opacity="0.55" />
+                <path d="M440 75 L540 75" stroke="#22D3EE" stroke-width="2.5" fill="none" marker-end="url(#arrowCyan)" />
+
+                <defs>
+                  <marker id="arrowCyan" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                    <path d="M0,0 L8,4 L0,8 Z" fill="#22D3EE" />
+                  </marker>
+                </defs>
+
+                <!-- Input Nodes -->
+                <rect x="12" y="10" width="138" height="36" rx="8" fill="#0F1C3A" stroke="#38BDF8" stroke-opacity="0.6" />
+                <text x="81" y="33" text-anchor="middle" fill="#E2E8F0" font-size="12" font-family="Inter, sans-serif" font-weight="600">RGB (Color)</text>
+
+                <rect x="12" y="57" width="138" height="36" rx="8" fill="#0F1C3A" stroke="#F59E0B" stroke-opacity="0.6" />
+                <text x="81" y="80" text-anchor="middle" fill="#E2E8F0" font-size="12" font-family="Inter, sans-serif" font-weight="600">Thermal (Heat)</text>
+
+                <rect x="12" y="104" width="138" height="36" rx="8" fill="#0F1C3A" stroke="#A855F7" stroke-opacity="0.6" />
+                <text x="81" y="127" text-anchor="middle" fill="#E2E8F0" font-size="12" font-family="Inter, sans-serif" font-weight="600">NIR (Structure)</text>
+
+                <!-- AI Dehazing Core -->
+                <rect x="280" y="34" width="160" height="82" rx="14" fill="#0B2447" stroke="#22D3EE" stroke-width="1.8" />
+                <text x="360" y="70" text-anchor="middle" fill="#22D3EE" font-size="13" font-family="Inter, sans-serif" font-weight="700">AI Dehazing</text>
+                <text x="360" y="90" text-anchor="middle" fill="#94A3B8" font-size="11" font-family="Inter, sans-serif">Haze Removal &amp; Fusion</text>
+
+                <!-- Output Node -->
+                <rect x="546" y="42" width="162" height="66" rx="12" fill="#0F1C3A" stroke="#22D3EE" stroke-opacity="0.8" />
+                <text x="627" y="71" text-anchor="middle" fill="#FFFFFF" font-size="12.5" font-family="Inter, sans-serif" font-weight="700">Clear Road View</text>
+                <text x="627" y="90" text-anchor="middle" fill="#67E8F9" font-size="10.5" font-family="Inter, sans-serif">Driver &amp; ADAS Ready</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECTION 5: FUTURE VISION                                            -->
+    <!-- =================================================================== -->
+    <section id="future-vision" class="relative py-24 sm:py-32 bg-navy-900 border-t border-cyan-500/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="reveal text-center max-w-3xl mx-auto mb-14">
+          <span class="text-xs font-semibold uppercase tracking-widest text-cyan-400">05 — Future Vision</span>
+          <h2 class="mt-2 text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            Built for Smart Vehicles &amp; ADAS
+          </h2>
+          <p class="mt-4 text-slate-300 text-base sm:text-lg leading-relaxed">
+            Beyond helping human drivers see clearly, ClearVision AI can feed reliable visibility data directly into next-generation Advanced Driver Assistance Systems.
+          </p>
+        </div>
+
+        <div class="reveal grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <!-- Interactive ADAS Concept Visual -->
+          <div class="lg:col-span-7 glass-panel rounded-2xl p-4 sm:p-6">
+            <div class="relative rounded-xl overflow-hidden aspect-video border border-slate-700/70">
+              <img
+                src="images/foggy-road.jpg"
+                alt="Smart vehicle with glowing ADAS perception waves on foggy highway"
+                class="w-full h-full object-cover"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-navy-950/75 via-transparent to-transparent pointer-events-none"></div>
+
+              <!-- Interactive Hotspot Dots -->
+              <button type="button" data-adas="hud" class="adas-dot absolute top-[44%] left-[44%] w-7 h-7 rounded-full bg-cyan-400/90 border-2 border-white shadow-lg shadow-cyan-400/60 flex items-center justify-center text-[11px] font-bold text-navy-950 hover:scale-110 transition-transform cursor-pointer" aria-label="Windshield HUD Overlay">1</button>
+              <button type="button" data-adas="aeb" class="adas-dot absolute top-[58%] left-[29%] w-7 h-7 rounded-full bg-blue-500/90 border-2 border-white shadow-lg flex items-center justify-center text-[11px] font-bold text-white hover:scale-110 transition-transform cursor-pointer" aria-label="Forward Collision Support">2</button>
+              <button type="button" data-adas="lane" class="adas-dot absolute top-[72%] left-[60%] w-7 h-7 rounded-full bg-blue-500/90 border-2 border-white shadow-lg flex items-center justify-center text-[11px] font-bold text-white hover:scale-110 transition-transform cursor-pointer" aria-label="Lane Keeping Assist">3</button>
+              <button type="button" data-adas="v2x" class="adas-dot absolute top-[35%] left-[62%] w-7 h-7 rounded-full bg-blue-500/90 border-2 border-white shadow-lg flex items-center justify-center text-[11px] font-bold text-white hover:scale-110 transition-transform cursor-pointer" aria-label="Connected Vehicle Alerts">4</button>
+
+              <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs text-slate-200 pointer-events-none">
+                <span class="px-2.5 py-1 rounded-md bg-navy-950/80 border border-white/10">Click numbered points to explore ADAS integration</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive ADAS Capability Cards -->
+          <div class="lg:col-span-5 space-y-3">
+            <button type="button" data-adas="hud" class="adas-card glass-panel-active w-full text-left rounded-2xl p-4 sm:p-5 transition-all cursor-pointer">
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-xs font-bold flex items-center justify-center shrink-0">1</span>
+                <h3 class="text-base font-bold text-white">Windshield HUD Overlay</h3>
+              </div>
+              <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                Projects subtle lane edges and vehicle outlines onto the driver’s heads-up display so hazards are visible without looking down at a screen.
+              </p>
+            </button>
+
+            <button type="button" data-adas="aeb" class="adas-card glass-panel w-full text-left rounded-2xl p-4 sm:p-5 transition-all cursor-pointer hover:border-cyan-400/40">
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs font-bold flex items-center justify-center shrink-0">2</span>
+                <h3 class="text-base font-bold text-white">Collision &amp; Braking Support</h3>
+              </div>
+              <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                Provides cleaner visual input to emergency braking and adaptive cruise control when fog hides stopped traffic ahead.
+              </p>
+            </button>
+
+            <button type="button" data-adas="lane" class="adas-card glass-panel w-full text-left rounded-2xl p-4 sm:p-5 transition-all cursor-pointer hover:border-cyan-400/40">
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs font-bold flex items-center justify-center shrink-0">3</span>
+                <h3 class="text-base font-bold text-white">All-Weather Lane Keeping</h3>
+              </div>
+              <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                Helps autonomous and assisted steering systems stay centered even when painted road lines fade into heavy mist.
+              </p>
+            </button>
+
+            <button type="button" data-adas="v2x" class="adas-card glass-panel w-full text-left rounded-2xl p-4 sm:p-5 transition-all cursor-pointer hover:border-cyan-400/40">
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs font-bold flex items-center justify-center shrink-0">4</span>
+                <h3 class="text-base font-bold text-white">Connected V2X Fog Alerts</h3>
+              </div>
+              <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                Shares local visibility conditions with nearby smart vehicles so approaching drivers are warned before entering dense fog zones.
+              </p>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+    <!-- =================================================================== -->
+    <!-- SECTION 6: HUAWEI TECHNOLOGY INTEGRATION                            -->
+    <!-- =================================================================== -->
+    <section id="huawei-integration" class="relative py-24 sm:py-32 bg-navy-950 bg-tech-grid border-t border-rose-500/20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="reveal max-w-3xl mb-14">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold uppercase tracking-widest mb-3">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+            06 — Huawei Technology Integration
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            Powered by <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-rose-300 to-cyan-300">Huawei Cloud &amp; Ascend AI</span>
+          </h2>
+          <p class="mt-4 text-slate-300 text-base sm:text-lg leading-relaxed">
+            A conceptual roadmap showing how ClearVision AI can leverage Huawei Cloud infrastructure for dataset management and model training, paired with Huawei Ascend AI processors for future in-vehicle acceleration.
+          </p>
+        </div>
+
+        <!-- 1. Huawei Cloud & 2. Huawei Ascend AI Cards -->
+        <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+          <!-- Huawei Cloud Card -->
+          <div class="glass-panel rounded-2xl p-6 border-rose-500/25 hover:border-rose-400/50 transition-colors">
+            <div class="flex items-start justify-between gap-4 mb-5">
+              <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-rose-500/15 border border-rose-500/35 flex items-center justify-center text-rose-400 shrink-0">
+                  <!-- Cloud Infrastructure SVG -->
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.5 19h11a4.5 4.5 0 0 0 .9-8.9A5.5 5.5 0 0 0 7.7 8.4 4 4 0 0 0 6.5 19Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 13v4m-2-2h4" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-white">Huawei Cloud</h3>
+                  <p class="text-xs text-slate-400">Cloud Storage, Training &amp; Deployment Backbone</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 shrink-0">
+                Proposed Cloud Stack
+              </span>
+            </div>
+
+            <div class="space-y-4">
+              <div class="rounded-xl bg-navy-900/80 border border-white/10 p-4 flex items-start gap-3.5">
+                <div class="w-9 h-9 rounded-lg bg-rose-500/15 border border-rose-400/30 flex items-center justify-center text-rose-300 shrink-0 mt-0.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 12l8-4.5M12 12v9M12 12L4 7.5" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-sm font-semibold text-white">Huawei ModelArts</h4>
+                  <p class="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Supports end-to-end AI dehazing model training, tuning, deployment, and cloud inference workflows in a unified development pipeline.
+                  </p>
+                </div>
+              </div>
+
+              <div class="rounded-xl bg-navy-900/80 border border-white/10 p-4 flex items-start gap-3.5">
+                <div class="w-9 h-9 rounded-lg bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-cyan-300 shrink-0 mt-0.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <ellipse cx="12" cy="5" rx="8" ry="3" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-sm font-semibold text-white">Huawei OBS (Object Storage Service)</h4>
+                  <p class="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Stores foggy road image datasets (RGB, Thermal, NIR), training samples, and project data securely for scalable cloud access.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Huawei Ascend AI Card -->
+          <div class="glass-panel-huawei rounded-2xl p-6 hover:border-rose-400/55 transition-colors">
+            <div class="flex items-start justify-between gap-4 mb-5">
+              <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500/45 flex items-center justify-center text-rose-300 shrink-0">
+                  <!-- Ascend NPU Chip SVG -->
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" rx="2" />
+                    <rect x="9.5" y="9.5" width="5" height="5" rx="0.8" />
+                    <path stroke-linecap="round" d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-white">Huawei Ascend AI</h3>
+                  <p class="text-xs text-slate-400">Hardware Acceleration &amp; Future Edge Deployment</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/20 text-rose-200 border border-rose-400/40 shrink-0">
+                Proposed Future Hardware
+              </span>
+            </div>
+
+            <div class="space-y-4">
+              <div class="rounded-xl bg-navy-900/80 border border-white/10 p-4 flex items-start gap-3.5">
+                <div class="w-9 h-9 rounded-lg bg-rose-500/15 border border-rose-400/30 flex items-center justify-center text-rose-300 shrink-0 mt-0.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 2L3 14h9l-1 8 10-12h-9l1-8Z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-sm font-semibold text-white">Ascend NPU Acceleration</h4>
+                  <p class="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Designed to accelerate neural network training and low-power inference for multi-spectrum image dehazing workloads.
+                  </p>
+                </div>
+              </div>
+
+              <div class="rounded-xl bg-navy-900/80 border border-white/10 p-4 flex items-start gap-3.5">
+                <div class="w-9 h-9 rounded-lg bg-blue-500/15 border border-blue-400/30 flex items-center justify-center text-blue-300 shrink-0 mt-0.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 17h14M6 17l1.5-5.5A2 2 0 0 1 9.4 10h5.2a2 2 0 0 1 1.9 1.5L18 17M7 17v2m10-2v2" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-sm font-semibold text-white">Conceptual In-Vehicle Edge Deployment</h4>
+                  <p class="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Envisions running the trained dehazing model directly on embedded Ascend hardware inside smart vehicles to support ADAS perception.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Interactive Architecture Diagram -->
+        <div class="reveal glass-panel rounded-2xl p-5 sm:p-8 border-rose-500/20">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 class="text-lg font-bold text-white">Interactive Architecture Diagram</h3>
+              <p class="text-xs sm:text-sm text-slate-400">Click any stage in the workflow to inspect its role and integration status</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="huawei-flow-prev" type="button" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-colors">
+                ← Prev
+              </button>
+              <button id="huawei-flow-next" type="button" class="px-3.5 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/40 text-xs font-semibold text-rose-200 transition-colors">
+                Next Stage →
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <!-- Left: Vertical Interactive Workflow Chain -->
+            <div class="lg:col-span-6 flex flex-col items-center">
+              <button type="button" data-hstep="0" class="huawei-node arch-node-active w-full rounded-xl px-4 py-3 border border-cyan-400/40 text-left transition-all cursor-pointer flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-bold flex items-center justify-center shrink-0">1</span>
+                  <span class="text-sm font-semibold text-white">Road Cameras (RGB / Thermal / NIR)</span>
+                </div>
+                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 shrink-0">Input</span>
+              </button>
+
+              <div class="py-1 text-cyan-400/70 text-sm font-bold select-none">↓</div>
+
+              <button type="button" data-hstep="1" class="huawei-node w-full rounded-xl px-4 py-3 bg-navy-900/75 border border-white/10 hover:border-rose-400/40 text-left transition-all cursor-pointer flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-300 text-xs font-bold flex items-center justify-center shrink-0">2</span>
+                  <span class="text-sm font-semibold text-white">Huawei Cloud OBS</span>
+                </div>
+                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 shrink-0">Cloud Storage</span>
+              </button>
+
+              <div class="py-1 text-rose-400/70 text-sm font-bold select-none">↓</div>
+
+              <button type="button" data-hstep="2" class="huawei-node w-full rounded-xl px-4 py-3 bg-navy-900/75 border border-white/10 hover:border-rose-400/40 text-left transition-all cursor-pointer flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-300 text-xs font-bold flex items-center justify-center shrink-0">3</span>
+                  <span class="text-sm font-semibold text-white">Huawei ModelArts</span>
+                </div>
+                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 shrink-0">AI Platform</span>
+              </button>
+
+              <div class="py-1 text-rose-400/70 text-sm font-bold select-none">↓</div>
+
+              <button type="button" data-hstep="3" class="huawei-node w-full rounded-xl px-4 py-3 bg-navy-900/75 border border-white/10 hover:border-cyan-400/40 text-left transition-all cursor-pointer flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-bold flex items-center justify-center shrink-0">4</span>
+                  <span class="text-sm font-semibold text-white">AI Dehazing Model</span>
+                </div>
+                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 shrink-0">Core Model</span>
+              </button>
+
+              <div class="py-1 text-rose-400/70 text-sm font-bold select-none">↓</div>
+
+              <button type="button" data-hstep="4" class="huawei-node w-full rounded-xl px-4 py-3 bg-navy-900/75 border border-white/10 hover:border-rose-400/40 text-left transition-all cursor-pointer flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-300 text-xs font-bold flex items-center justify-center shrink-0">5</span>
+                  <span class="text-sm font-semibold text-white">Huawei Ascend AI Acceleration</span>
+                </div>
+                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 shrink-0">Proposed NPU</span>
+              </button>
+
+              <div class="py-1 text-cyan-400/70 text-sm font-bold select-none">↓</div>
+
+              <button type="button" data-hstep="5" class="huawei-node w-full rounded-xl px-4 py-3 bg-navy-900/75 border border-white/10 hover:border-cyan-400/40 text-left transition-all cursor-pointer flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-bold flex items-center justify-center shrink-0">6</span>
+                  <span class="text-sm font-semibold text-white">Enhanced Road Visibility</span>
+                </div>
+                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 shrink-0">Output</span>
+              </button>
+
+              <div class="py-1 text-blue-400/70 text-sm font-bold select-none">↓</div>
+
+              <button type="button" data-hstep="6" class="huawei-node w-full rounded-xl px-4 py-3 bg-navy-900/75 border border-white/10 hover:border-blue-400/40 text-left transition-all cursor-pointer flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold flex items-center justify-center shrink-0">7</span>
+                  <span class="text-sm font-semibold text-white">Future ADAS Integration</span>
+                </div>
+                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/15 text-blue-300 shrink-0">Future Vision</span>
+              </button>
+            </div>
+
+            <!-- Right: Active Stage Inspector + Status Legend -->
+            <div class="lg:col-span-6 space-y-5">
+              <div class="rounded-2xl bg-navy-900/90 border border-rose-500/30 p-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <span id="huawei-stage-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">
+                    Stage 01 — Sensor Input
+                  </span>
+                  <span id="huawei-stage-status" class="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-white/5 text-slate-300 border border-white/10">
+                    Concept Pipeline
+                  </span>
+                </div>
+                <h4 id="huawei-stage-title" class="text-xl font-bold text-white">
+                  Road Cameras (RGB / Thermal / NIR)
+                </h4>
+                <p id="huawei-stage-desc" class="mt-3 text-sm sm:text-base text-slate-300 leading-relaxed">
+                  Multi-spectrum cameras capture visible color, thermal heat signatures, and near-infrared road structure in foggy driving conditions.
+                </p>
+              </div>
+
+              <!-- Clear Concept Distinction Box -->
+              <div class="rounded-2xl bg-navy-950/80 border border-white/10 p-5 space-y-3">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Prototype Scope &amp; Technology Status</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div class="rounded-xl bg-navy-900/80 border border-cyan-400/25 p-3.5">
+                    <div class="font-semibold text-cyan-300 mb-1">Concept Design (Shown Here)</div>
+                    <p class="text-slate-400 leading-relaxed">
+                      Visualizes the multi-spectrum dehazing pipeline, user experience, and proposed cloud-to-vehicle architecture.
+                    </p>
+                  </div>
+                  <div class="rounded-xl bg-navy-900/80 border border-rose-400/25 p-3.5">
+                    <div class="font-semibold text-rose-300 mb-1">Proposed Huawei Integration</div>
+                    <p class="text-slate-400 leading-relaxed">
+                      Huawei OBS, ModelArts, and Ascend AI represent planned future infrastructure—not yet deployed or benchmarked.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  <!-- Clean Footer -->
+  <footer class="bg-navy-950 border-t border-cyan-500/10 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-white">ClearVision AI</span>
+        <span>—</span>
+        <span>“See Beyond the Fog”</span>
+      </div>
+      <p>Concept Presentation Prototype • Illustrative visuals only</p>
+      <a href="#home" class="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">Back to Top ↑</a>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      // 1. Mobile Navigation Toggle
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          const isHidden = mobileMenu.classList.contains('hidden');
+          mobileMenu.classList.toggle('hidden', !isHidden);
+          mobileMenuBtn.setAttribute('aria-expanded', String(isHidden));
+        });
+
+        mobileLinks.forEach((link) => {
+          link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+            mobileMenuBtn.setAttribute('aria-expanded', 'false');
+          });
+        });
+      }
+
+      // 2. Scroll Progress & Active Section Highlighting
+      const scrollProgress = document.getElementById('scroll-progress');
+      const navLinks = document.querySelectorAll('.nav-link');
+      const sections = ['home', 'problem', 'solution', 'how-it-works', 'future-vision', 'huawei-integration'].map((id) =>
+        document.getElementById(id)
+      );
+
+      function updateScrollUI() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
+        if (scrollProgress) {
+          scrollProgress.style.width = progress + '%';
+        }
+
+        let currentId = 'home';
+        const offset = window.innerHeight * 0.35;
+        sections.forEach((sec) => {
+          if (sec && scrollTop + offset >= sec.offsetTop) {
+            currentId = sec.id;
+          }
+        });
+
+        navLinks.forEach((link) => {
+          const isActive = link.getAttribute('data-section') === currentId;
+          link.classList.toggle('text-cyan-300', isActive);
+          link.classList.toggle('bg-cyan-500/10', isActive);
+          link.classList.toggle('text-slate-300', !isActive);
+        });
+      }
+
+      window.addEventListener('scroll', updateScrollUI, { passive: true });
+      updateScrollUI();
+
+      // 3. Reveal on Scroll
+      const revealEls = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12 }
+        );
+        revealEls.forEach((el) => observer.observe(el));
+      } else {
+        revealEls.forEach((el) => el.classList.add('visible'));
+      }
+
+      // 4. Section 2: Interactive Fog Density Simulator
+      const fogSlider = document.getElementById('fog-density-slider');
+      const fogOverlay = document.getElementById('problem-fog-overlay');
+      const hazeVeil = document.getElementById('problem-haze-veil');
+      const fogBadge = document.getElementById('fog-level-badge');
+      const fogCaption = document.getElementById('fog-impact-caption');
+
+      function updateFogSimulator(val) {
+        const num = Number(val);
+        if (fogOverlay) {
+          fogOverlay.style.opacity = String(Math.min(1, num / 75));
+        }
+        if (hazeVeil) {
+          const veilOpacity = num > 55 ? ((num - 55) / 45) * 0.55 : 0;
+          hazeVeil.style.opacity = String(veilOpacity);
+        }
+
+        if (fogBadge && fogCaption) {
+          if (num < 30) {
+            fogBadge.textContent = 'Light Mist';
+            fogBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30';
+            fogCaption.textContent = 'Light mist slightly softens distant headlights while lane markings remain mostly visible.';
+          } else if (num < 70) {
+            fogBadge.textContent = 'Moderate Fog';
+            fogBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-400/30';
+            fogCaption.textContent = 'Moderate fog blurs lane markings and softens contrast, making distance harder to judge.';
+          } else {
+            fogBadge.textContent = 'Dense Fog';
+            fogBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-400/30';
+            fogCaption.textContent = 'Dense fog scatters headlights into a bright veil, hiding lanes and vehicles until dangerously close.';
+          }
+        }
+      }
+
+      if (fogSlider) {
+        fogSlider.addEventListener('input', (e) => updateFogSimulator(e.target.value));
+        updateFogSimulator(fogSlider.value);
+      }
+
+      // 5. Section 3: Interactive 4-Step Pipeline
+      const pipelineSteps = document.querySelectorAll('.pipeline-step');
+      const pipelineBadge = document.getElementById('pipeline-detail-badge');
+      const pipelineText = document.getElementById('pipeline-detail-text');
+      const pipelineNextBtn = document.getElementById('pipeline-next-btn');
+
+      const pipelineDetails = [
+        {
+          badge: 'Step 01 — Camera Input',
+          text: 'Multi-spectrum vehicle cameras continuously observe the foggy road environment, capturing both visible and infrared signals.',
+        },
+        {
+          badge: 'Step 02 — AI Dehazing',
+          text: 'The AI model estimates where fog is thickest and separates atmospheric light scatter from real road surfaces and objects.',
+        },
+        {
+          badge: 'Step 03 — Enhanced Visibility',
+          text: 'Crisp lane boundaries, road edges, and vehicles ahead are restored into a clear, natural-looking visual feed.',
+        },
+        {
+          badge: 'Step 04 — Safety Support',
+          text: 'The enhanced view supports safer driver awareness and provides cleaner perception input for vehicle safety systems.',
+        },
+      ];
+
+      let activeStep = 0;
+
+      function setPipelineStep(idx) {
+        activeStep = idx;
+        pipelineSteps.forEach((btn, i) => {
+          btn.classList.toggle('glass-panel-active', i === idx);
+          btn.classList.toggle('glass-panel', i !== idx);
+        });
+        if (pipelineBadge && pipelineText) {
+          pipelineBadge.textContent = pipelineDetails[idx].badge;
+          pipelineText.textContent = pipelineDetails[idx].text;
+        }
+      }
+
+      pipelineSteps.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.getAttribute('data-step'));
+          setPipelineStep(idx);
+        });
+      });
+
+      if (pipelineNextBtn) {
+        pipelineNextBtn.addEventListener('click', () => {
+          setPipelineStep((activeStep + 1) % pipelineDetails.length);
+        });
+      }
+
+      // 6. Section 3: Interactive Before / After Comparison Slider
+      const compareBox = document.getElementById('compare-box');
+      const compareBefore = document.getElementById('compare-before-layer');
+      const compareDivider = document.getElementById('compare-divider');
+      const compareHandle = document.getElementById('compare-handle');
+      const splitPresets = document.querySelectorAll('.split-preset');
+
+      let isDragging = false;
+
+      function setComparePosition(percent) {
+        const clamped = Math.max(0, Math.min(100, percent));
+        if (compareBefore) {
+          compareBefore.style.clipPath = `inset(0 ${100 - clamped}% 0 0)`;
+        }
+        if (compareDivider) {
+          compareDivider.style.left = `${clamped}%`;
+        }
+        if (compareHandle) {
+          compareHandle.style.left = `${clamped}%`;
+          compareHandle.setAttribute('aria-valuenow', String(Math.round(clamped)));
+        }
+      }
+
+      function updateFromClientX(clientX) {
+        if (!compareBox) return;
+        const rect = compareBox.getBoundingClientRect();
+        const pct = ((clientX - rect.left) / rect.width) * 100;
+        setComparePosition(pct);
+      }
+
+      if (compareBox) {
+        compareBox.addEventListener('pointerdown', (e) => {
+          isDragging = true;
+          compareBox.setPointerCapture(e.pointerId);
+          updateFromClientX(e.clientX);
+        });
+        compareBox.addEventListener('pointermove', (e) => {
+          if (isDragging) updateFromClientX(e.clientX);
+        });
+        compareBox.addEventListener('pointerup', () => {
+          isDragging = false;
+        });
+        compareBox.addEventListener('pointercancel', () => {
+          isDragging = false;
+        });
+      }
+
+      if (compareHandle) {
+        compareHandle.addEventListener('keydown', (e) => {
+          const current = Number(compareHandle.getAttribute('aria-valuenow') || 50);
+          if (e.key === 'ArrowLeft') setComparePosition(current - 5);
+          if (e.key === 'ArrowRight') setComparePosition(current + 5);
+        });
+      }
+
+      splitPresets.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const pct = Number(btn.getAttribute('data-split'));
+          setComparePosition(pct);
+          splitPresets.forEach((b) => {
+            const active = b === btn;
+            b.className = active
+              ? 'split-preset px-2.5 py-1 rounded-md text-xs font-medium bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 transition-colors'
+              : 'split-preset px-2.5 py-1 rounded-md text-xs font-medium bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-200 border border-white/10 transition-colors';
+          });
+        });
+      });
+
+      // 7. Section 4: Multi-Spectrum Camera Explorer
+      const sensorBtns = document.querySelectorAll('.sensor-btn');
+      const sensorTitle = document.getElementById('sensor-panel-title');
+      const sensorSubtitle = document.getElementById('sensor-panel-subtitle');
+      const sensorTag = document.getElementById('sensor-wavelength-tag');
+      const sensorImg = document.getElementById('sensor-preview-img');
+      const sensorHud = document.getElementById('sensor-hud-overlay');
+
+      const foggyImgSrc = 'images/foggy-road.jpg';
+      const clearImgSrc = 'images/clear-road.jpg';
+
+      const sensorData = {
+        rgb: {
+          title: 'RGB Camera — Visible Light View',
+          subtitle: 'Captures natural color and road signs, but dense fog scatters visible light.',
+          tag: 'Visible Spectrum',
+          src: foggyImgSrc,
+          filterClass: 'filter-rgb',
+          hudOpacity: '0',
+        },
+        thermal: {
+          title: 'Thermal Camera — Heat Signature View',
+          subtitle: 'Highlights warm engines, tires, and pedestrians right through thick fog.',
+          tag: 'Long-Wave Infrared',
+          src: clearImgSrc,
+          filterClass: 'filter-thermal',
+          hudOpacity: '0.4',
+        },
+        nir: {
+          title: 'NIR Camera — Haze-Penetrating Structure',
+          subtitle: 'Near-infrared wavelengths scatter less in mist, revealing clearer road edges.',
+          tag: 'Near-Infrared',
+          src: clearImgSrc,
+          filterClass: 'filter-nir',
+          hudOpacity: '0.2',
+        },
+        fusion: {
+          title: 'AI Dehazing & Multi-Spectrum Fusion',
+          subtitle: 'Combines RGB color, NIR road geometry, and Thermal cues into one clear view.',
+          tag: 'AI Fusion Concept',
+          src: clearImgSrc,
+          filterClass: 'filter-fusion',
+          hudOpacity: '0.5',
+        },
+      };
+
+      sensorBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-sensor');
+          const data = sensorData[key];
+          if (!data) return;
+
+          sensorBtns.forEach((b) => {
+            const isActive = b === btn;
+            b.classList.toggle('glass-panel-active', isActive);
+            b.classList.toggle('glass-panel', !isActive);
+          });
+
+          if (sensorTitle) sensorTitle.textContent = data.title;
+          if (sensorSubtitle) sensorSubtitle.textContent = data.subtitle;
+          if (sensorTag) sensorTag.textContent = data.tag;
+          if (sensorImg) {
+            sensorImg.src = data.src;
+            sensorImg.className = `w-full h-full object-cover transition-all duration-500 ${data.filterClass}`;
+          }
+          if (sensorHud) {
+            sensorHud.style.opacity = data.hudOpacity;
+          }
+        });
+      });
+
+      // 8. Section 5: ADAS Interactive Hotspots & Cards
+      const adasDots = document.querySelectorAll('.adas-dot');
+      const adasCards = document.querySelectorAll('.adas-card');
+
+      function selectAdasFeature(key) {
+        adasCards.forEach((card) => {
+          const active = card.getAttribute('data-adas') === key;
+          card.classList.toggle('glass-panel-active', active);
+          card.classList.toggle('glass-panel', !active);
+        });
+
+        adasDots.forEach((dot) => {
+          const active = dot.getAttribute('data-adas') === key;
+          dot.classList.toggle('bg-cyan-400/90', active);
+          dot.classList.toggle('text-navy-950', active);
+          dot.classList.toggle('scale-125', active);
+          dot.classList.toggle('bg-blue-500/90', !active);
+          dot.classList.toggle('text-white', !active);
+        });
+      }
+
+      adasDots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+          selectAdasFeature(dot.getAttribute('data-adas'));
+        });
+      });
+
+      adasCards.forEach((card) => {
+        card.addEventListener('click', () => {
+          selectAdasFeature(card.getAttribute('data-adas'));
+        });
+      });
+
+      // 9. Section 6: Interactive Huawei Architecture Diagram
+      const huaweiNodes = document.querySelectorAll('.huawei-node');
+      const hStageBadge = document.getElementById('huawei-stage-badge');
+      const hStageStatus = document.getElementById('huawei-stage-status');
+      const hStageTitle = document.getElementById('huawei-stage-title');
+      const hStageDesc = document.getElementById('huawei-stage-desc');
+      const hPrevBtn = document.getElementById('huawei-flow-prev');
+      const hNextBtn = document.getElementById('huawei-flow-next');
+
+      const huaweiStages = [
+        {
+          badge: 'Stage 01 — Sensor Input',
+          status: 'Concept Pipeline',
+          title: 'Road Cameras (RGB / Thermal / NIR)',
+          desc: 'Multi-spectrum cameras capture visible color, thermal heat signatures, and near-infrared road structure in foggy driving conditions.',
+        },
+        {
+          badge: 'Stage 02 — Huawei Cloud OBS',
+          status: 'Proposed Cloud Integration',
+          title: 'Huawei Cloud OBS',
+          desc: 'Object Storage Service (OBS) centrally stores foggy road image datasets, multi-spectrum frames, and project data for model development.',
+        },
+        {
+          badge: 'Stage 03 — Huawei ModelArts',
+          status: 'Proposed Cloud Integration',
+          title: 'Huawei ModelArts',
+          desc: 'Huawei ModelArts provides the cloud AI development platform to train, manage, and deploy the ClearVision AI dehazing model.',
+        },
+        {
+          badge: 'Stage 04 — AI Core',
+          status: 'Concept Pipeline',
+          title: 'AI Dehazing Model',
+          desc: 'Fuses RGB, Thermal, and NIR features to remove atmospheric fog scatter and reconstruct clear road lanes and vehicle contours.',
+        },
+        {
+          badge: 'Stage 05 — Huawei Ascend AI',
+          status: 'Proposed Hardware Integration',
+          title: 'Huawei Ascend AI Acceleration',
+          desc: 'Ascend AI processors (NPUs) are proposed to accelerate neural network training in the cloud and support future in-vehicle edge inference.',
+        },
+        {
+          badge: 'Stage 06 — Visibility Output',
+          status: 'Concept Pipeline',
+          title: 'Enhanced Road Visibility',
+          desc: 'Delivers a high-contrast, dehazed road view to help drivers recognize lanes, obstacles, and vehicles ahead more clearly.',
+        },
+        {
+          badge: 'Stage 07 — Smart Vehicles',
+          status: 'Future Vision',
+          title: 'Future ADAS Integration',
+          desc: 'Feeds clearer visual perception into future heads-up displays, lane-keeping systems, and collision-support features.',
+        },
+      ];
+
+      let activeHStep = 0;
+
+      function setHuaweiStage(idx) {
+        activeHStep = idx;
+        huaweiNodes.forEach((node, i) => {
+          node.classList.toggle('arch-node-active', i === idx);
+        });
+        const item = huaweiStages[idx];
+        if (item && hStageBadge && hStageStatus && hStageTitle && hStageDesc) {
+          hStageBadge.textContent = item.badge;
+          hStageStatus.textContent = item.status;
+          hStageTitle.textContent = item.title;
+          hStageDesc.textContent = item.desc;
+        }
+      }
+
+      huaweiNodes.forEach((node) => {
+        node.addEventListener('click', () => {
+          setHuaweiStage(Number(node.getAttribute('data-hstep')));
+        });
+      });
+
+      if (hPrevBtn) {
+        hPrevBtn.addEventListener('click', () => {
+          setHuaweiStage((activeHStep - 1 + huaweiStages.length) % huaweiStages.length);
+        });
+      }
+
+      if (hNextBtn) {
+        hNextBtn.addEventListener('click', () => {
+          setHuaweiStage((activeHStep + 1) % huaweiStages.length);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
